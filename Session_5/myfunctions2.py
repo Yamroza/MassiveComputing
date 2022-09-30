@@ -2,6 +2,9 @@
 
 import numpy as np
 
+# Authors of homework:
+# Aleksandra Jamróz
+# Mireia Alba Kesti Izquierdo
 
 def init_second(my_matrix2):
     global matrix_2
@@ -62,83 +65,27 @@ def parallel_filtering_image(r):
     else:
         nrow = image[r+1,:,:]
 
-    # copy first and last element of each row to create borders
-    prow = np.ndarray.tolist(prow)
-    prow.insert(0, prow[0])
-    prow.append(prow[-1])
-    prow = np.array(prow)
-
-    srow = np.ndarray.tolist(srow)
-    srow.insert(0, srow[0])
-    srow.append(srow[-1])
-    srow = np.array(srow)
-
-    nrow = np.ndarray.tolist(nrow)
-    nrow.insert(0, nrow[0])
-    nrow.append(nrow[-1])
-    nrow = np.array(nrow)
-
     # defines the result vector, and set the initial value to 0
     frow = np.zeros((cols,depth))
     frow = srow
 
-    # calculation of filtered pixel's value
-    for i in range(1, len(srow)-1):         # iterating through pixels in the row
-        for j in range(depth):              # iterating on r, g, b color components
-            frow[i][j] = np.sum([[prow[i-1][j] * my_filter[0][0], prow[i][j] * my_filter[0][1], prow[i+1][j] * my_filter[0][2]], 
-                                 [srow[i-1][j] * my_filter[1][0], srow[i][j] * my_filter[1][1], srow[i+1][j] * my_filter[1][2]],
-                                 [nrow[i-1][j] * my_filter[2][0], nrow[i][j] * my_filter[2][1], nrow[i+1][j] * my_filter[2][2]]])
-    
-    return frow[1:-1]                   # returns row without additional unnecessary borders
-
-
-
-
-def second_parallel_filtering_image(r):
-    """"
-    r: row number to filter
-    image: global memory array
-    my_filter: filter shape to apply to the image
-    """
-    
-    global image
-    global my_filter
-    
-    # from the global variable, gets the image shape
-    (rows, cols, depth) = image.shape
-
-    # fetch the row from the original image
-    srow = image[r,:,:]
-    if (r > 0):
-        prow = image[r-1,:,:]
-    else:
-        prow = image[r,:,:]
-    
-    if (r == (rows-1)):
-        nrow = image[r,:,:]
-    else:
-        nrow = image[r+1,:,:]
-
-    # defines the result vector, and set the initial value to 0
-    frow = np.zeros((cols,depth))
-    frow = srow
-
-    for i in range(len(srow)):
-        for j in range(depth):
-            x = i - 1
-            y = i + 1
+    for i in range(len(srow)):      # iterating on pixels in the row
+        for j in range(depth):      # iterating on color components (1 for grayscale images, 3 for rgb)
+ 
+            x = i - 1               # x - previous column value
+            y = i + 1               # y - next column value
             if x < 0:
-                x += 1
+                x += 1              # x value incremented if it exceeds the border of image
             if y > len(srow)-1:
-                y -= 1
+                y -= 1              # y value decremented if it exceeds the border of image
 
-            frow[i][j] = np.sum([[prow[x][j] * my_filter[0][0], prow[i][j] * my_filter[0][1], prow[y][j] * my_filter[0][2]], 
-                                 [srow[x][j] * my_filter[1][0], srow[i][j] * my_filter[1][1], srow[y][j] * my_filter[1][2]],
-                                 [nrow[x][j] * my_filter[2][0], nrow[i][j] * my_filter[2][1], nrow[y][j] * my_filter[2][2]]])
+            frow[i][j] = (prow[x][j] * my_filter[0][0] + prow[i][j] * my_filter[0][1] + prow[y][j] * my_filter[0][2] +
+                          srow[x][j] * my_filter[1][0] + srow[i][j] * my_filter[1][1] + srow[y][j] * my_filter[1][2] +
+                          nrow[x][j] * my_filter[2][0] + nrow[i][j] * my_filter[2][1] + nrow[y][j] * my_filter[2][2])
 
-    return frow                 # returns row without additional unnecessary borders
+    return frow
 
-    
+
 #This cell should be the last one
 #this avoid the execution of this script when is invoked directly.
 if __name__ == "__main__":
