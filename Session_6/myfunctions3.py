@@ -1,5 +1,9 @@
 # My Functions Library
 
+# Authors of homework:
+# Aleksandra Jamróz
+# Mireia Alba Kesti Izquierdo
+
 import numpy as np
 from multiprocessing.sharedctypes import Value, Array, RawArray
 from multiprocessing import Process, Lock
@@ -86,57 +90,51 @@ def parallel_shared_imagecopy(row):
     return
 
 
-def edge_filter(row):
+def edge_filter(r):
+
     global image
     global my_filter
     global shared_space
 
+    (rows, cols, depth) = image.shape
+
+    # fetch the row from the original image
+    srow = image[r,:,:]
+    if (r > 0):
+        prow = image[r-1,:,:]
+    else:
+        prow = image[r,:,:]
+    
+    if (r == (rows-1)):
+        nrow = image[r,:,:]
+    else:
+        nrow = image[r+1,:,:]
+
+    # defines the result vector, and set the initial value to 0
+    frow = np.zeros((cols,depth))
+    frow = srow
+
+    for i in range(len(srow)):      # iterating on pixels in the row
+        for j in range(depth):      # iterating on color components (1 for grayscale images, 3 for rgb)
+ 
+            x = i - 1               # x - previous column value
+            y = i + 1               # y - next column value
+            if x < 0:
+                x += 1              # x value incremented if it exceeds the border of image
+            if y > len(srow)-1:
+                y -= 1              # y value decremented if it exceeds the border of image
+
+            frow[i][j] = (prow[x][j] * my_filter[0][0] + prow[i][j] * my_filter[0][1] + prow[y][j] * my_filter[0][2] +
+                          srow[x][j] * my_filter[1][0] + srow[i][j] * my_filter[1][1] + srow[y][j] * my_filter[1][2] +
+                          nrow[x][j] * my_filter[2][0] + nrow[i][j] * my_filter[2][1] + nrow[y][j] * my_filter[2][2])
+
+
+        
+    # while we are in this code block no ones, except this execution thread, can write in the shared memory
+    # lock is here not to prevent other threads from accessing it, while calculations are made
     with shared_space.get_lock():
-        (rows,cols,depth) = image.shape
+        shared_matrix[r,:,:] = frow
 
-        #fetch the r row from the original image
-        srow = image[row,:,:]
-
-        if (row > 0):
-            prow = image[row-1,:,:]
-        else:
-            prow = image[row,:,:]
-    
-        if (row == (rows-1)):
-            nrow = image[row,:,:]
-        else:
-            nrow = image[row+1,:,:]
-
-        # copy first and last element of each row to create borders
-        prow = np.ndarray.tolist(prow)
-        prow.insert(0, prow[0])
-        prow.append(prow[-1])
-        prow = np.array(prow)
-
-        srow = np.ndarray.tolist(srow)
-        srow.insert(0, srow[0])
-        srow.append(srow[-1])
-        srow = np.array(srow)
-
-        nrow = np.ndarray.tolist(nrow)
-        nrow.insert(0, nrow[0])
-        nrow.append(nrow[-1])
-        nrow = np.array(nrow)
-    
-        #defines the result vector, and set the initial value to 0
-        frow = np.zeros((cols,depth))
-        frow = srow
-
-        # calculation of filtered pixel's value
-        for i in range(1, len(srow)-1):         # iterating through pixels in the row
-            for j in range(depth):              # iterating on r, g, b color components
-                filtered_mat = [[prow[i-1][j] * my_filter[0][0], prow[i][j] * my_filter[0][1], prow[i+1][j] * my_filter[0][2]], 
-                                [srow[i-1][j] * my_filter[1][0], srow[i][j] * my_filter[1][1], srow[i+1][j] * my_filter[1][2]],
-                                [nrow[i-1][j] * my_filter[2][0], nrow[i][j] * my_filter[2][1], nrow[i+1][j] * my_filter[2][2]]]
-                frow[i][j] = np.sum(filtered_mat)
-
-        #while we are in this code block no ones, except this execution thread, can write in the shared memory
-        shared_matrix[row,:,:] = frow[1:-1]
     return    
 
 
