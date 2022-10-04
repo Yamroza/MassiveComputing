@@ -53,7 +53,19 @@ def filters_execution(image: np.array,
     on the same image and saving the result to independent memory spaces. Uses
     previous function for filtering.
     """
-    # doesn't have any inside yet
+
+    # creating two processes
+    p1 = mp.Process(target = image_filter, args = (image, filter_mask1, numprocessors, filtered_image1))
+    p2 = mp.Process(target = image_filter, args = (image, filter_mask2, numprocessors, filtered_image2))
+    
+    # starting processes 
+    p1.start() 
+    p2.start() 
+  
+    # wait until processes are finished 
+    p1.join() 
+    p2.join()
+
     return
 
 
@@ -79,7 +91,8 @@ def pool_init(shared_array_, srcimg, filter_mask):
     size = image.shape
     shared_space = shared_array_    # assigning the shared memory to the local reference
     shared_matrix = tonumpyarray(shared_space).reshape(size)    # define the numpy matrix reference to handle data, which will use the shared memory buffer
-
+    
+    return 
 
 
 def edge_filter(r):
