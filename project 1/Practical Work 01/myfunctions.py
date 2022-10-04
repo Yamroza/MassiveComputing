@@ -70,6 +70,8 @@ def filters_execution(image: np.array,
 
 
 # function copy-pasted from previous session 6
+# we have 2 images so we can't actually write both to the same global variables
+# idk, 2 functions? or some if statement in "initializer = ..." parameter?
 def pool_init(shared_array_, srcimg, filter_mask):
     """
     Initializing the global shared memory data
@@ -117,7 +119,7 @@ def edge_filter(r):
             for number in range(previous_rows_number):
                 return
 
-    # THE rest of the function is thinking about if-s coblination how to 
+    # THE rest of the function is thinking about if-s combination how to 
     # match filters to rows etc.
 
 
