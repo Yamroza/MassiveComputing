@@ -109,16 +109,68 @@ def edge_filter(r):
     # fetch the row from the original image
     srow = image[r,:,:]
 
+    # defines the result vector, and set the initial value to 0
+    frow = np.zeros((cols,depth))
+    frow = srow
+
     # calculating how many rows & cols we have to take
-    previous_rows_number = (filter_rows - 1) / 2
-    previous_cols_number = (filter_cols - 1) / 2    
+    additional_rows_number = (filter_rows - 1) / 2
+    additional_cols_number = (filter_cols - 1) / 2    
+    
+    previous_rows = []
+    next_rows = []
 
-    for i in range(len(srow)):
-        for j in range(depth):
-            sum = 0             # final pixel value
-            for number in range(previous_rows_number):
-                return
+    if r == 0:
+        if additional_rows_number > 0:
+            previous_rows.append(image[r,:,:])
+        if additional_rows_number > 1:
+            previous_rows.append(image[r,:,:])
 
+    elif r == 1:
+        if additional_rows_number > 1:
+            previous_rows.append(image[r-1,:,:])
+        if additional_rows_number > 0:
+            previous_rows.append(image[r-1,:,:])
+    
+    else:
+        if additional_rows_number > 1:
+            previous_rows.append(image[r-2,:,:])
+        if additional_rows_number > 0:
+            previous_rows.append(image[r-1,:,:])
+
+
+    if r == rows - 1:
+        if additional_rows_number > 0:
+            next_rows.append(image[r,:,:])
+        if additional_rows_number > 1:
+            next_rows.append(image[r,:,:])
+
+    elif r == rows - 2:
+        if additional_rows_number > 0:
+            next_rows.append(image[r+1,:,:])
+        if additional_rows_number > 1:
+            next_rows.append(image[r+1,:,:])
+
+    else:
+        if additional_rows_number > 0:
+            next_rows.append(image[r+1,:,:])
+        if additional_rows_number > 1:
+            next_rows.append(image[r+2,:,:])
+
+
+
+
+
+
+
+
+    for i in range(len(srow)):      # iterating on pixels in row
+        for j in range(depth):      # iterating on color components (1 for grayscale, 3 for color)
+            sum = 0                 # final pixel value
+            for row in range(filter_rows):
+                for col in range(filter_cols):
+                    sum += my_filter[row][col] * 
+            frow[i][j] = sum
     # THE rest of the function is thinking about if-s combination how to 
     # match filters to rows etc.
 
