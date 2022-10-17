@@ -18,6 +18,34 @@ def tonumpyarray(mp_arr):
     return np.frombuffer(mp_arr.get_obj(),dtype=np.uint8)
 
 
+# function copy-pasted from previous session 6
+# we have 2 images so we can't actually write both to the same global variables
+# idk, 2 functions? or some if statement in "initializer = ..." parameter?
+def pool_init(shared_array_, srcimg, filter_mask):
+    """
+    Initializing the global shared memory data
+    shared_array_ - shared read/write data, with lock. It is a vector 
+    (because the shared memory should be allocated as a vector)
+    srcimg - the original image
+    filtermask - filter which will be applied to the image 
+    Results will be stored in the shared memory array
+    """
+    
+    global shared_space         # define the local process memory reference for shared memory space
+    global shared_matrix        # define the numpy matrix handler
+    global image                # define the readonly memory data as global (the scope of this global variables is the local module)
+    global my_filter
+    
+    # initializing the global read only memory data
+    image = srcimg
+    my_filter = filter_mask
+    size = image.shape
+    shared_space = shared_array_    # assigning the shared memory to the local reference
+    shared_matrix = tonumpyarray(shared_space).reshape(size)    # define the numpy matrix reference to handle data, which will use the shared memory buffer
+    
+    return 
+
+
 # FIRST OBLIGATORY FUNCTION FROM INSTRUCTION
 # We have 2 pictures and 2 filters, so we can't make them both global using <<pool_init>>
 # because it would overwrite them in the same memory place later, so using this one will be wrong
@@ -67,34 +95,6 @@ def filters_execution(image: np.array,
     p2.join()
 
     return
-
-
-# function copy-pasted from previous session 6
-# we have 2 images so we can't actually write both to the same global variables
-# idk, 2 functions? or some if statement in "initializer = ..." parameter?
-def pool_init(shared_array_, srcimg, filter_mask):
-    """
-    Initializing the global shared memory data
-    shared_array_ - shared read/write data, with lock. It is a vector 
-    (because the shared memory should be allocated as a vector)
-    srcimg - the original image
-    filtermask - filter which will be applied to the image 
-    Results will be stored in the shared memory array
-    """
-    
-    global shared_space         # define the local process memory reference for shared memory space
-    global shared_matrix        # define the numpy matrix handler
-    global image                # define the readonly memory data as global (the scope of this global variables is the local module)
-    global my_filter
-    
-    # initializing the global read only memory data
-    image = srcimg
-    my_filter = filter_mask
-    size = image.shape
-    shared_space = shared_array_    # assigning the shared memory to the local reference
-    shared_matrix = tonumpyarray(shared_space).reshape(size)    # define the numpy matrix reference to handle data, which will use the shared memory buffer
-    
-    return 
 
 
 def edge_filter(r):
