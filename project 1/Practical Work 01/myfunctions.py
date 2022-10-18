@@ -65,7 +65,7 @@ def image_filter(image: np.array,
     with mp.Pool(processes = numprocesses,
                  initializer = pool_init,
                  initargs = [filtered_image, image, filter_mask]) as p:
-        p.map(edge_filter, rows)
+        p.map(filtering, rows)
     return 
 
 
@@ -97,11 +97,10 @@ def filters_execution(image: np.array,
     return
 
 
-def edge_filter(r):
+def filtering(r):
     
     global image
     global my_filter
-    global shared_space
 
     (rows, cols, depth) = image.shape
     (filter_rows, filter_cols) = my_filter.shape
@@ -114,65 +113,41 @@ def edge_filter(r):
     frow = srow
 
     # calculating how many rows & cols we have to take
-    additional_rows_number = (filter_rows - 1) / 2
-    additional_cols_number = (filter_cols - 1) / 2    
+    additional_rows_number = int((filter_rows - 1) / 2)
+    additional_cols_number = int((filter_cols - 1) / 2)    
     
-    previous_rows = []
-    next_rows = []
+    # creating matrix of needed rows
+    rows_mat = []
 
-    if r == 0:
-        if additional_rows_number > 0:
-            previous_rows.append(image[r,:,:])
-        if additional_rows_number > 1:
-            previous_rows.append(image[r,:,:])
+    for row_number in range(-additional_rows_number, additional_rows_number + 1):
+        index = r + row_number
+        if index < 0:
+            index = 0
+        if index > len(image)-1:
+            index = len(image)-1
+        rows_mat.append(image[index,:,:])
 
-    elif r == 1:
-        if additional_rows_number > 1:
-            previous_rows.append(image[r-1,:,:])
-        if additional_rows_number > 0:
-            previous_rows.append(image[r-1,:,:])
-    
-    else:
-        if additional_rows_number > 1:
-            previous_rows.append(image[r-2,:,:])
-        if additional_rows_number > 0:
-            previous_rows.append(image[r-1,:,:])
-
-
-    if r == rows - 1:
-        if additional_rows_number > 0:
-            next_rows.append(image[r,:,:])
-        if additional_rows_number > 1:
-            next_rows.append(image[r,:,:])
-
-    elif r == rows - 2:
-        if additional_rows_number > 0:
-            next_rows.append(image[r+1,:,:])
-        if additional_rows_number > 1:
-            next_rows.append(image[r+1,:,:])
-
-    else:
-        if additional_rows_number > 0:
-            next_rows.append(image[r+1,:,:])
-        if additional_rows_number > 1:
-            next_rows.append(image[r+2,:,:])
-
-
-
-
-
-
-
-
+    # filling output row
     for i in range(len(srow)):      # iterating on pixels in row
         for j in range(depth):      # iterating on color components (1 for grayscale, 3 for color)
             sum = 0                 # final pixel value
             for row in range(filter_rows):
                 for col in range(filter_cols):
-                    sum += my_filter[row][col] * 
-            frow[i][j] = sum
-    # THE rest of the function is thinking about if-s combination how to 
-    # match filters to rows etc.
+                    col_position = i + col - additional_cols_number
+                    if col_position < 0:
+                        sum += my_filter[row][col] * rows_mat[row][0][j]
+                    elif col_position > len(srow) - 1:
+                        sum += my_filter[row][col] * rows_mat[row][-1][j]
+                    else:
+                        sum += my_filter[row][col] * rows_mat[row][col_position][j]
+
+            frow[i][j] = int(sum)
+
+    with shared_space.get_lock():
+        shared_matrix[r,:,:] = frow
+
+    return    
+
 
 
 
