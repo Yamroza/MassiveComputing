@@ -149,8 +149,6 @@ def filtering(r):
     return    
 
 
-
-
 # This cell should be the last one to avoid the execution of 
 # this script when is invoked directly.
 if __name__ == "__main__":
