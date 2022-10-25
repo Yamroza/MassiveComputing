@@ -1,5 +1,13 @@
 import numpy as np
-from myfunctions import tonumpyarray
+
+
+def tonumpyarray(mp_arr):
+    """
+    Creates a numpy array structure of type unsigned int8, 
+    with the memory used by our global r/w shared memory
+    mp_array - shared memory array with lock
+    """
+    return np.frombuffer(mp_arr.get_obj(),dtype=np.uint8)
 
 
 def pool_init(shared_array_, srcimg, filter_mask):

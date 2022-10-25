@@ -10,15 +10,6 @@ import multiprocessing as mp
 import myfunctions2 as my2
 
 
-def tonumpyarray(mp_arr):
-    """
-    Creates a numpy array structure of type unsigned int8, 
-    with the memory used by our global r/w shared memory
-    mp_array - shared memory array with lock
-    """
-    return np.frombuffer(mp_arr.get_obj(),dtype=np.uint8)
-
-
 def image_filter(image: np.array, 
                  filter_mask: np.array,
                  numprocesses: int,
