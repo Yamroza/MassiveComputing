@@ -7,7 +7,7 @@
 
 import numpy as np
 import multiprocessing as mp
-import my_functions2 as my2
+import myfunctions2 as my2
 
 
 def tonumpyarray(mp_arr):
@@ -19,7 +19,6 @@ def tonumpyarray(mp_arr):
     return np.frombuffer(mp_arr.get_obj(),dtype=np.uint8)
 
 
-# FIRST OBLIGATORY FUNCTION FROM INSTRUCTION
 def image_filter(image: np.array, 
                  filter_mask: np.array,
                  numprocesses: int,
